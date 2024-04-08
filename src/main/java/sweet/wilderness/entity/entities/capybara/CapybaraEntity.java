@@ -102,6 +102,8 @@ public class CapybaraEntity extends TameableEntity implements GeoEntity {
 
         super.tick();
 
+        if(hasVehicle() && getPassengerList().isEmpty() && getPassengerDownChain(this) >= 10) return;
+
         this.checkBlockCollision();
         List<Entity> list = this.getWorld().getOtherEntities(this, this.getBoundingBox().expand(0.20000000298023224, -0.009999999776482582, 0.20000000298023224), EntityPredicates.canBePushedBy(this));
 
@@ -117,7 +119,8 @@ public class CapybaraEntity extends TameableEntity implements GeoEntity {
                 if (!var10.hasNext()) return;
 
                 entity = (Entity) var10.next();
-            } while (entity.hasPassenger(this));
+
+            } while (entity.hasPassenger(this) || getPassengerUpChain(entity) >= 10);
 
             if (!this.getWorld().isClient && this.getPassengerList().isEmpty()
                 && !entity.hasVehicle() && entity instanceof LivingEntity
@@ -136,7 +139,27 @@ public class CapybaraEntity extends TameableEntity implements GeoEntity {
         return cache;
     }
 
+    public int getPassengerDownChain(Entity ent) {
+        var ent1 = ent;
+        int i = 1;
+        while(ent1.hasVehicle()) {
+            ent1 = ent1.getVehicle();
+            i++;
+        }
 
+        return i;
+    }
+
+    public int getPassengerUpChain(Entity ent) {
+        var ent1 = ent;
+        int i = 1;
+        while(ent1.hasPassengers()) {
+            ent1 = ent1.getFirstPassenger();
+            i++;
+        }
+
+        return i;
+    }
     @Override
     public EntityView method_48926() {
         return this.getWorld();
